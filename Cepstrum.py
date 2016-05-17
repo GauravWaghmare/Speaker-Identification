@@ -30,8 +30,8 @@ third.plot(freqs, 20*np.log10(data_fft))
 third.set_title("Log magnitude spectrum")
 real_ceps_pitch=data_cep(int(fs*2/1000):data_cep.size)
 max1=real_ceps_pitch.max
-for uu in range(real_ceps_pitch.size)
-    if real_ceps_pitch(uu)==max1
+for uu in range(real_ceps_pitch.size):
+    if real_ceps_pitch(uu)==max1:
         sample_no=uu;
 pitch_period_To=(int(fs*2/1000)+sample_no)*(1/fs)
 pitch_freq_FO=1/pitch_period_To
