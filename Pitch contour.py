@@ -7,7 +7,7 @@ import numpy as np
 import math
 from spectrum.window import Window
 import scipy
-From scipy import fftpack
+from scipy import fftpack
 from scipy import signal
 
 
@@ -42,15 +42,14 @@ for i in xrange(q, (floor((length(y))/sample_shift)-ceil(window_length/sample_sh
     for j in range((((i-1)*sample_shift)+1), (((i-1)*sample_shift)+window_length)):
         yy[k] = y[j]
         k = k + 1
-    t = arange( 1.0/Fs, len(yy)*1.0/Fs, 1.0/Fs)
+    t = arrange( 1.0/Fs, len(yy)*1.0/Fs, 1.0/Fs)
     # t=1/Fs:1/Fs:(length(yy)/Fs);
     t = t[1:len(t)/2]
     t *= 1000
     # t=(t(1:length(t)/2))*1000;
 
     dfty = absolute(fftpack.rfft(yy))
-    dfty1 = dfty[1:dfty.size/2]
-    tt = arrange(1.0/Fs, len(dfty1), Fs)
+    tt = arrange(1.0/Fs, dfty.size, Fs)
     # tt = linspace(1/Fs,Fs,length(dfty1))
     for i in range(1, len(dfty)):
         if (dfty[i]==0):
