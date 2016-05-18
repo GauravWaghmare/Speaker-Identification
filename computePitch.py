@@ -10,11 +10,11 @@ from scipy import fftpack
 from scipy import signal
 
 
-[Fs, y ]= scipy.io.wavfile.read('/home/manvi/Desktop/voicebiometric/10recordings/1.wav');
+Fs, y= scipy.io.wavfile.read('/home/manvi/Desktop/voicebiometric/10recordings/1.wav');
 data = y
 
 pitch_freq1=0.0
-o = 1.0
+o = 0
 Frame_size = 30
 # pitch_freq = 0.0   ### array
 Frame_shift = 10
@@ -49,60 +49,80 @@ print int(rangei)
 
 pitch_freq = np.zeros(shape=(rangei,))
 
-for i in range(1, int(rangei+1)):
-    # print i
-    k = 1
+for i in range(0, int(rangei)):
+    print "i = " + str(i)
+    k = 0
     jlow = ((i-1)*sample_shift)+1
     jup = (((i-1)*sample_shift)+window_length)
-    yy = np.zeros(shape=(jup,))
 
-    # print jlow
-    # print jup
+    yy = np.empty(shape=(jup-jlow+1,))
 
+    # print "len(yy) = " + str(len(yy))
     for j in range(int(jlow), int(jup)):
-        print j
+        # print j
         yy[k] = y[j]
         k = k + 1
-    print yy
-    t = arange( 1.0/Fs, len(yy)*1.0/Fs, 1.0/Fs)
-    # t=1/Fs:1/Fs:(length(yy)/Fs);
-    t = t[1:len(t)/2]
-    t *= 1000
-    # t=(t(1:length(t)/2))*1000;
 
-    dfty = absolute(fftpack.rfft(yy))
-    dfty1 = dfty[1:dfty.size/2]
-    tt = arange(1.0/Fs, len(dfty1), Fs)
-    # tt = linspace(1/Fs,Fs,length(dfty1))
-    for i in range(1, len(dfty)):
+    t = arange( 1.0/Fs, (len(yy)*1.0/Fs + (1.0/Fs)), 1.0/Fs)
+    # print len(t)/2
+    ## t=1/Fs:1/Fs:(length(yy)/Fs);
+    
+    t = t[:(len(t)/2)]
+    t *= 1000
+    # print len(t)
+#     # t=(t(1:length(t)/2))*1000;
+    # print dfty
+    dfty = absolute(fftpack.fft(yy))
+    # print dfty.shape
+    # print dfty
+    dfty1 = dfty[:(dfty.size/2)]
+    tt = np.linspace(1.0/Fs, Fs, len(dfty1))
+#     # tt = linspace(1/Fs,Fs,length(dfty1) )
+    for i in range(0, len(dfty)):
         if (dfty[i]==0):
-            dfty[i]= 0.000000000001
+            dfty[i]= 1e-16
     # end
     dftylog = np.log10(dfty)
-    dftylog1 = dftylog[1:dftylog.size/2]
+    # print dftylog
+    dftylog1 = dftylog[:dftylog.size/2]
+    # print dftylog1
     yy = 10*dftylog1
+    # print yy
 
 
-    # //xtitle('Log Magnitude Spectrum','frequency in Hz');
-    real_ceps=absolute(fftpack.irfft(dftylog));
-    real_ceps = real_ceps[1:len(real_ceps)*1.0/2]
-    # //real_ceps=[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 2 3 4 5 6 5 4 3 2 1];
+    # print len(yy)
+#     # //xtitle('Log Magnitude Spectrum','frequency in Hz');
+    real_ceps = absolute(np.fft.ifft(dftylog))
+    # print real_ceps
+    real_ceps = real_ceps[:(len(real_ceps)/2)]
     real_ceps_pitch = real_ceps[16: len(real_ceps)]
 
+    # print real_ceps_pitch
+
     max1 = amax(real_ceps_pitch)
-    # //max1=0;
-    for uu in xrange(1, len(real_ceps_pitch)):
+    # print "\t  " + str(max1)
+    for uu in xrange(0, len(real_ceps_pitch)):
         if real_ceps_pitch[uu]==max1:
           sample_no=uu
+          # print sample_no
 
+    # print sample_no
     pitch_freq1 = 1.0/((Fs*2.0/1000+sample_no)*(1.0/Fs));
+    print "\t " + str(pitch_freq1)
+    # print o
     pitch_freq[o] = pitch_freq1
     o=o+1
-# end of uppermost for loop
+# # end of uppermost for loop
 
 
-kk = arange(1.0/Fs ,len(pitch_freq)*1.0*shift_period, shift_period)
+kk = arange(1.0/Fs ,len(pitch_freq)*shift_period, shift_period)
     ##kk=1/Fs:shift_period:(length(pitch_freq)*shift_period)
     # subplot(4,1,3)
+print len(kk)
+print len(pitch_freq)
 plot(kk,pitch_freq)
+axes = plt.gca()
+axes.set_ylim([0,1000])
+# plt.axis([0 8 0 1000])
+show()
 # xtitle('Pitch Contour obtained by cepstrum pitch estimation method')
