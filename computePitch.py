@@ -10,7 +10,7 @@ from scipy import fftpack
 from scipy import signal
 
 
-Fs, y= scipy.io.wavfile.read('/home/manvi/Desktop/voicebiometric/10recordings/1.wav');
+Fs, y= scipy.io.wavfile.read('/home/manvi/Desktop/voicebiometric/10recordings/5.wav');
 data = y
 
 pitch_freq1=0.0
@@ -95,7 +95,7 @@ for i in range(0, int(rangei)):
     real_ceps = absolute(np.fft.ifft(dftylog))
     # print real_ceps
     real_ceps = real_ceps[:(len(real_ceps)/2)]
-    real_ceps_pitch = real_ceps[16: len(real_ceps)]
+    real_ceps_pitch = real_ceps[32: len(real_ceps)]
 
     # print real_ceps_pitch
 
@@ -120,9 +120,74 @@ kk = arange(1.0/Fs ,len(pitch_freq)*shift_period, shift_period)
     # subplot(4,1,3)
 print len(kk)
 print len(pitch_freq)
-plot(kk,pitch_freq)
+plot(kk,pitch_freq,'-o')
+grid()
 axes = plt.gca()
-axes.set_ylim([0,1000])
+axes.set_ylim([0,500])
 # plt.axis([0 8 0 1000])
-show()
 # xtitle('Pitch Contour obtained by cepstrum pitch estimation method')
+
+num_of_frames = rangei
+
+# np.var
+
+
+# window_period = 50/1000
+# window_length *= 10/1000
+# shift_period = 10/100
+# s = shift_period*fs
+
+win_var = 65000.0
+pitch = 0
+window_length = 160
+shift = 5
+
+print len(pitch_freq)/shift
+pitch = np.zeros(shape=( len(pitch_freq)/shift,)) 
+idx1 = 0.0
+idx2 = 0.0 
+
+k=0
+for i in xrange(0, len(pitch_freq)-window_length, shift):
+    # print i
+    # win_var = np.var(pitch_freq[i:i+window_length])
+    if win_var > np.var(pitch_freq[i:i+window_length]):
+        win_var = np.var(pitch_freq[i:i+window_length])
+        idx1 = i
+        idx2 = i+window_length
+print win_var
+print idx1
+mean = np.mean(pitch_freq[idx1:idx2])
+
+print pitch_freq[idx1:idx2]
+print mean
+print
+print
+# show()
+
+d = []
+for i in range(0, len(pitch_freq)-160, 5):
+   d.append(pitch_freq[i:i+160])
+
+d = np.array(d)
+var_d = np.var(d)
+min_var = np.amin(var_d)
+# print min_var
+for i in range(var_d.size):
+    if var_d == min_var:     
+        # print d[i]
+        pitch = np.mean(d[i])
+        print i
+
+# plot()
+
+print pitch
+print 
+print
+
+if pitch < 180 and pitch>60:
+    print "Male"
+elif pitch>180 and pitch<280:
+    print "Female"
+else:
+    print "error in calculating pitch"
