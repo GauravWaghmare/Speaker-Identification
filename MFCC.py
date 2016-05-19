@@ -17,9 +17,8 @@ from sklearn import cluster
 
 mfcc_var = []
 for i in range(1, 33, 1):
-    #[fs, data] = wavfile.read("/home/gaurav/Downloads/Gaurav_Manvi_recs/"+str(i)+".wav")
-    [fs, data] = wavfile.read("/home/gaurav/Documents/voice_samples/"+str(i)+".wav")
-    mfcc_feat = mfcc(data, samplerate=fs)
+    [fs, data] = wavfile.read("/home/gaurav/Documents/voice_samples/"+str(i)+".wav") #Change this to read every file in that directory
+    mfcc_feat = mfcc(data, samplerate=fs)                                            #with all those telephone recordings
     mfcc_mean = np.mean(mfcc_feat, axis=0)
     mfcc_var.append(mfcc_mean)
 mfcc_var = np.array(mfcc_var)
