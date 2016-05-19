@@ -170,7 +170,7 @@ for i in range(0, len(pitch_freq)-160, 5):
    d.append(pitch_freq[i:i+160])
 
 d = np.array(d)
-var_d = np.var(d)
+var_d = np.var(d, axis=1)
 min_var = np.amin(var_d)
 # print min_var
 for i in range(var_d.size):
