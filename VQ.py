@@ -24,6 +24,7 @@ speaker = numpy.zeros(shape=(num_speakers*4,34))
 
 
 y = []
+d3_y = []
 
 fno =0
 row = 0
@@ -58,20 +59,20 @@ while srno < num_speakers:
 		if flag == False:
 			flag = True
 			feature_vector = features
-			# print feature_vector.shape
+			print "feature vector " + feature_vector.shape
 			# print
 			# i = 1
 		else:
 			# print "arbitajvhfibvvdbli"
 			feature_vector = numpy.concatenate((feature_vector, features ), axis = 1)
-			# print feature_vector.shape
-
+			print "final feature vector " + feature_vector.shape
+	d3_y.append(feature_vector)
 	# print "feature_vector = " + str(feature_vector.shape)
 	# print "speakers = " + str(speakers.shape)
 	# print
 	# speakers = numpy.append(speakers, feature_vector)
 
 
-
-print speakers.shape
+d3_y = numpy.array(d3_y)
+print d3_y.shape
 # print y
