@@ -66,7 +66,7 @@ while srno < num_speakers:
 		else:
 			# print "arbitajvhfibvvdbli"
 			feature_vector = numpy.concatenate((feature_vector, features ), axis = 1)
-			print "final feature vector " + feature_vector.shape
+			print "final feature vector " + feature_vector.shape #Is feature_vector featurexframe or framexfeature? 
 	d3_y.append(feature_vector)
 	# print "feature_vector = " + str(feature_vector.shape)
 	# print "speakers = " + str(speakers.shape)
@@ -85,6 +85,8 @@ for i in range(d3_y.shape[0]):
 # Calulating codebooks for every user
 codebook = []
 for i in range(d3_y.shape[0]):
+	# kmeans2 function takes in the argument as MxN, M is the no. of observations and N is the number of features
+	# I guess we'll have to take transpose or something of the d3_y matrix
 	codebook.append(vq.kmeans2(d3_y[i,:,:],8)[0])
 
 codebook = np.array(codebook) 
