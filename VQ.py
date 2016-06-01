@@ -35,14 +35,14 @@ while srno < num_speakers:
 	srno = srno+1
 	print "\nsrno = " + str(srno)
 	directory = direc + str(srno) + "/"
-	utterances = glob.glob(directory + "*.wav")
+	utterances = glob.glob(directory + "*.wav") #returns a list of names matching the argument in the directory
 	# feature_vector = numpy.zeros(shape=(34,1))
 	flag = False
 	# flag_2 = False
 
 	for fname in utterances:
 		fn = fname.split('/')
-		fn = fn[-1]
+		fn = fn[-1] #take just the name of the wav file
 		# print fn 
 		# print "fno = " + str(fno)
 		fno = fno + 1
@@ -51,7 +51,7 @@ while srno < num_speakers:
 		fs, signal = scipy.io.wavfile.read(fname)
 		window_len = frame_size*fs # Number of samples in frame_size
 		sample_shift = frame_shift*fs # Number of samples shifted
-		features = featureExtraction.stFeatureExtraction(signal, fs, window_len, sample_shift )
+		features = featureExtraction.stFeatureExtraction(signal, fs, window_len, sample_shift)
 		# print "features.shape = " + str(features.shape)
 		i = 0
 
