@@ -3,6 +3,7 @@ import featureExtraction
 import glob
 import numpy
 import scipy.io.wavfile
+import scipy.cluster.vq as vq
 from sklearn.preprocessing import OneHotEncoder
 import scipy.stats as stats
 from features import mfcc
@@ -76,3 +77,16 @@ while srno < num_speakers:
 d3_y = numpy.array(d3_y)
 print d3_y.shape
 # print y
+
+# Whitening every speaker's data before VQing
+for i in range(d3_y.shape[0]):
+	d3_y[i,:,:] = vq.whiten(d3_y[i,:,:])
+
+# Calulating codebooks for every user
+codebook = []
+for i in range(d3_y.shape[0]):
+	codebook.append(vq.kmeans2(d3_y[i,:,:],8)[0])
+
+codebook = np.array(codebook) 
+
+
