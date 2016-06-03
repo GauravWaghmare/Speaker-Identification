@@ -16,22 +16,21 @@ frame_shift = 10.0/1000.0  # to convert seconds to miliseconds
 
 
 direc = "/home/Gaurav/Documents/Phoneme/trainset/"
-
-
 num_speakers = 5
-
 srno = 0
-
 speaker = numpy.zeros(shape=(num_speakers*4,34))
-
 
 y = []
 d3_y = []
-
 fno =0
 row = 0
-
 speakers = []
+
+### -----------------------------------------
+#	direc folder contains num_speakers=5 number of folders
+# 	Every Folder has 5 files(almost) corresponding to same user
+# 	
+### -----------------------------------------
 
 
 while srno < num_speakers:
@@ -46,18 +45,15 @@ while srno < num_speakers:
 	for fname in utterances:
 		fn = fname.split('/')
 		fn = fn[-1] #take just the name of the wav file
-		# print fn 
-		# print "fno = " + str(fno)
 		fno = fno + 1
 		row = row+1
 		y.append(srno-1)
 		fs, signal = scipy.io.wavfile.read(fname)
 		window_len = frame_size*fs # Number of samples in frame_size
 		sample_shift = frame_shift*fs # Number of samples shifted
-		features = featureExtraction.stFeatureExtraction(signal, fs, window_len, sample_shift)
+		features = featureExtraction.stFeatureExtraction(signal, fs, window_len, sample_shift)		# 34*number_frames
 		# print "features.shape = " + str(features.shape)
 		i = 0
-
 		if flag == False:
 			flag = True
 			feature_vector = features
@@ -66,9 +62,11 @@ while srno < num_speakers:
 			# i = 1
 		else:
 			# print "arbitajvhfibvvdbli"
-			feature_vector = numpy.concatenate((feature_vector, features ), axis = 1)
+			feature_vector = numpy.concatenate((feature_vector, features ), axis = 1)		# concatenate features matrix to prev matrix 
+																							# cols are added
+																							# number of rows remain same 
 			print "final feature vector " + feature_vector.shape #Is feature_vector featurexframe or framexfeature? 
-	d3_y.append(feature_vector)
+	d3_y.append(feature_vector)			# one element of this list corresponds to one user
 	# print "feature_vector = " + str(feature_vector.shape)
 	# print "speakers = " + str(speakers.shape)
 	# print
