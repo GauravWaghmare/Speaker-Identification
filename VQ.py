@@ -5,6 +5,7 @@ import numpy
 import scipy.io.wavfile
 import scipy.cluster.vq as vq
 from sklearn.preprocessing import OneHotEncoder
+from seqlearn.hmm import MultinomialHMM
 import scipy.stats as stats
 from features import mfcc
 from sklearn import cluster
@@ -14,7 +15,7 @@ frame_size = 25.0/1000.0 # to convert seconds to miliseconds
 frame_shift = 10.0/1000.0  # to convert seconds to miliseconds
 
 
-direc = "/home/manvi/Desktop/voicebiometric/Phoneme/trainset/"
+direc = "/home/Gaurav/Documents/Phoneme/trainset/"
 
 
 num_speakers = 5
@@ -79,16 +80,17 @@ print d3_y.shape
 # print y
 
 # Whitening every speaker's data before VQing
-for i in range(d3_y.shape[0]):
-	d3_y[i,:,:] = vq.whiten(d3_y[i,:,:])
+# for i in range(d3_y.shape[0]):
+# 	d3_y[i,:,:] = vq.whiten(d3_y[i,:,:])
 
 # Calulating codebooks for every user
-codebook = []
-for i in range(d3_y.shape[0]):
+# codebook = []
+# for i in range(d3_y.shape[0]):
 	# kmeans2 function takes in the argument as MxN, M is the no. of observations and N is the number of features
 	# I guess we'll have to take transpose or something of the d3_y matrix
-	codebook.append(vq.kmeans2(d3_y[i,:,:],8)[0])
+	# codebook.append(vq.kmeans2(d3_y[i,:,:],8)[0])
 
-codebook = np.array(codebook) 
+# codebook = np.array(codebook) 
 
-
+# HMM_clf = MultinomialHMM() #Initialising HMM classifier
+# HMM_clf.fit(codebook)
