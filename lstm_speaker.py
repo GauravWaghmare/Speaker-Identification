@@ -11,14 +11,10 @@ from keras.utils.visualize_util import plot
 frame_size = 25.0/1000.0 # to convert seconds to miliseconds
 frame_shift = 10.0/1000.0  # to convert seconds to miliseconds
 
-
 direc = "/home/Gaurav/Documents/Phoneme/trainset/"
 
-
 num_speakers = 5
-
 srno = 0
-
 speaker = numpy.zeros(shape=(num_speakers*4,34))
 
 x_train = []
@@ -28,8 +24,6 @@ while srno < num_speakers:
 	directory = direc + str(srno) + "/"
 	utterances = glob.glob(directory + "*.wav") #returns a list of names matching the argument in the directory
 	for fname in utterances:
-		fn = fname.split('/')
-		fn = fn[-1] #take just the name of the wav file
 		fs, signal = scipy.io.wavfile.read(fname)
 		window_len = frame_size*fs # Number of samples in frame_size
 		sample_shift = frame_shift*fs # Number of samples shifted
@@ -41,6 +35,8 @@ while srno < num_speakers:
 		x_train.append(feature_codebook)
 
 x_train = np.array(feature_vector)
+
+y_train = np.array([1]*5+[2]*5+[3]*5+[4]*5+[5]*5)
 
 
 data_dim = 34 # Gaurav : Number of features 
