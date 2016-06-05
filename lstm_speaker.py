@@ -21,32 +21,15 @@ srno = 0
 
 speaker = numpy.zeros(shape=(num_speakers*4,34))
 
-
-y = []
-d3_y = []
-
-fno = 0
-row = 0
-
-training vector
+x_train = []
 
 while srno < num_speakers:
 	srno = srno+1
-	print "\nsrno = " + str(srno)
 	directory = direc + str(srno) + "/"
 	utterances = glob.glob(directory + "*.wav") #returns a list of names matching the argument in the directory
-	# feature_vector = numpy.zeros(shape=(34,1))
-	flag = False
-	# flag_2 = False
-
 	for fname in utterances:
 		fn = fname.split('/')
 		fn = fn[-1] #take just the name of the wav file
-		# print fn 
-		# print "fno = " + str(fno)
-		fno = fno + 1
-		row = row+1
-		y.append(srno-1)
 		fs, signal = scipy.io.wavfile.read(fname)
 		window_len = frame_size*fs # Number of samples in frame_size
 		sample_shift = frame_shift*fs # Number of samples shifted
@@ -55,8 +38,9 @@ while srno < num_speakers:
 		features = np.reshape(features, (features.shape[1], features.shape[0]))
 		features = vq.whiten(features)
 		feature_codebook = vq.kmeans2(features,8)[0]
-		
+		x_train.append(feature_codebook)
 
+x_train = np.array(feature_vector)
 
 
 data_dim = 34 # Gaurav : Number of features 
@@ -76,12 +60,12 @@ model.compile(loss='categorical_crossentropy',
               metrics=['accuracy'])
 
 # generate dummy training data
-x_train = np.random.random((100, timesteps, data_dim)) # Gaurav : Sample x state vector x feature
-y_train = np.random.random((100, nb_classes)) # Gaurav : Sample x user
+# x_train = np.random.random((100, timesteps, data_dim)) # Gaurav : Sample x state vector x feature
+# y_train = np.random.random((100, nb_classes)) # Gaurav : Sample x user
 
 # generate dummy validation data
-x_val = np.random.random((10, timesteps, data_dim)) # Gaurav : Sample x state vector x feature
-y_val = np.random.random((10, nb_classes)) # Gaurav : Sample x user
+# x_val = np.random.random((10, timesteps, data_dim)) # Gaurav : Sample x state vector x feature
+# y_val = np.random.random((10, nb_classes)) # Gaurav : Sample x user
 
 model.fit(x_train, y_train, nb_epoch=5,
           validation_data=(x_val, y_val))
