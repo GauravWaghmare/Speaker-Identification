@@ -1,4 +1,5 @@
 import numpy as np
+import numpy
 import featureExtraction
 import glob
 import scipy.io.wavfile
@@ -36,7 +37,10 @@ while srno < num_speakers:
 
 x_train = np.array(feature_vector)
 
-y_train = np.array([1]*5+[2]*5+[3]*5+[4]*5+[5]*5)
+y_train = np.reshape(np.array([0]*5+[1]*5+[2]*5+[3]*5+[4]*5), (5,1))
+enc = OneHotEncoder()
+
+y_train = np.array(enc.fit_transform(y_train)).toarray()
 
 
 data_dim = 34 # Gaurav : Number of features 
