@@ -34,7 +34,8 @@ while srno < num_speakers:
 		# Transposing features to whiten them
 		features = np.reshape(features, (features.shape[1], features.shape[0]))
 		features = vq.whiten(features)
-		feature_codebook = vq.kmeans2(features,8)[0]
+		feature_codebook = vq.kmeans2(features,5)[0]
+		# print vq.vq(features, feature_codebook)
 		x_train.append(feature_codebook)
 
 x_train = np.array(x_train)
@@ -49,7 +50,10 @@ y_train = enc.fit_transform(y_train).toarray()
 x_test = []
 
 directory = direc + "test/"
-utterances = glob.glob(directory + ".wav")
+utterances = glob.glob(directory + "*.wav")
+# print utterances
+utterances.sort()
+# print utterances
 for fname in utterances:
 	fs, signal = scipy.io.wavfile.read(fname)
 	window_len = frame_size*fs # Number of samples in frame_size
@@ -58,13 +62,14 @@ for fname in utterances:
 	# Transposing features to whiten them
 	features = np.reshape(features, (features.shape[1], features.shape[0]))
 	features = vq.whiten(features)
-	feature_codebook = vq.kmeans2(features,8)[0]
+	feature_codebook = vq.kmeans2(features,5)[0]
 	x_test.append(feature_codebook)
 
 x_test = np.array(x_test)
+# print x_test.shape
 
 data_dim = 34 # Gaurav : Number of features 
-timesteps = 8 # Gaurav : Number of states 
+timesteps = 5 # Gaurav : Number of states 
 nb_classes = 5 # Gaurav : Number of users
 
 # expected input data shape: (batch_size, timesteps, data_dim)
@@ -87,7 +92,6 @@ model.compile(loss='categorical_crossentropy',
 # x_val = np.random.random((10, timesteps, data_dim)) # Gaurav : Sample x state vector x feature
 # y_val = np.random.random((10, nb_classes)) # Gaurav : Sample x user
 
-model.fit(x_train, y_train, nb_epoch=5,
-          validation_split=0.2)
+model.fit(x_train, y_train, nb_epoch=200, validation_split=0.1)
 
-model.predict(x_test)
+print model.predict(x_test)
