@@ -37,9 +37,9 @@ while srno < num_speakers:
 
 x_train = np.array(feature_vector)
 
-y_train = np.reshape(np.array([0]*5+[1]*5+[2]*5+[3]*5+[4]*5), (5,1))
+y_train = np.array([0]*5+[1]*5+[2]*5+[3]*5+[4]*5)
+y_train = np.transpose(y_train)
 enc = OneHotEncoder()
-
 y_train = np.array(enc.fit_transform(y_train)).toarray()
 
 
