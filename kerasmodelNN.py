@@ -1,64 +1,8 @@
-# import numpy as np
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation
-from keras.optimizers import SGD
-# import feature_loader
-import math
-from sklearn.preprocessing import OneHotEncoder
-
-# direc = "/home/manvi/Desktop/voicebiometric/Phoneme/trainset/"
-# num_speakers = 5
-
-# train_data, val_data, test_data = feature_loader.load_data(direc, num_speakers)
-
-# X_train = train_data[0]
-# print X_train.shape
-
-# y_train = train_data[1]
-# print y_train
-# y_train = np.reshape(y_train, (y_train.shape[0], 1))
-# enc = OneHotEncoder()
-# y_train =enc.fit_transform(y_train).toarray()
-# print y_train
-
-# X_val = val_data[0]
-# y_val = val_data[1]
-# y_val = np.reshape(y_val, (y_val.shape[0], 1))
-# enc = OneHotEncoder()
-# y_val =enc.fit_transform(y_val).toarray()
-
-# X_test = test_data[0]
-# y_test = test_data[1]
-# y_test = np.reshape(y_test, (y_test.shape[0], 1))
-# enc = OneHotEncoder()
-# y_test =enc.fit_transform(y_test).toarray()
-
-# model = Sequential()
-# # Dense(64) is a fully-connected layer with 64 hidden units.
-# # in the first layer, you must specify the expected input data shape:
-# # here, 20-dimensional vectors.
-# model.add(Dense(64, input_dim=34, init='uniform'))
-# model.add(Activation('tanh'))
-# model.add(Dropout(0.5))
-# model.add(Dense(64, init='uniform'))
-# model.add(Activation('tanh'))
-# model.add(Dropout(0.5))
-# model.add(Dense(5, init='uniform'))
-# model.add(Activation('softmax'))
-
-# sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
-# model.compile(loss='categorical_crossentropy',
-#               optimizer=sgd,
-#               metrics=['accuracy'])
-
-# model.fit(X_train, y_train, nb_epoch=20, validation_data = (X_val, y_val))
-# score = model.evaluate(X_test, y_test, batch_size=16)
-# print
-# print model.predict(X_test)
-# print
-# print score
-
 import numpy as np
+from keras.models import Sequential
+from keras.layers import Dropout, Activation
+from keras.optimizers import SGD
+import math
 import numpy
 import featureExtraction
 import glob, os
@@ -96,8 +40,8 @@ def findMin(matrix):
 
 while srno < num_speakers:
 	srno = srno+1
-	print srno
-	print
+	# print srno
+	# print
 	mapping = []
 	# fno =0 
 	directory = direc + str(srno) + "/"
@@ -108,8 +52,8 @@ while srno < num_speakers:
 	for fname in utterances:
 		# print fname
 		fno += 1
-		print fno
-		print
+		# print fno
+		# print
 		fs, signal = scipy.io.wavfile.read(fname)
 		window_len = frame_size*fs # Number of samples in frame_size
 		sample_shift = frame_shift*fs # Number of samples shifted
@@ -140,10 +84,8 @@ while srno < num_speakers:
 		mapping.sort()
 		ind = np.array(map(lambda x: x[1], mapping))
 		feature_codebook = feature_codebook[ind][:]
-		print feature_codebook
+		# print feature_codebook
 		# print z
-		# print vq.vq(features, feature_codebook)
-		# feature_codebook = feature_codebook.flatten()
 		x_train.append(feature_codebook)
 		y_train.append(srno)
 
@@ -245,40 +187,6 @@ y_train = enc.fit_transform(y_train).toarray()
 # # print y_train
 # # print y_train.shape
 
-# x_test = []
-
-# directory = "/home/manvi/Desktop/voicebiometric/Phoneme/testset/"
-# utterances = glob.glob(directory + "*.wav")
-# # print utterances
-# utterances.sort()
-# # print utterances
-# fno = 0
-# y_test = []
-# while fno < len(utterances):
-# 	fno += 1
-# 	fname = directory + str(fno) + ".wav"
-# 	fs, signal = scipy.io.wavfile.read(fname)
-# 	window_len = frame_size*fs # Number of samples in frame_size
-# 	sample_shift = frame_shift*fs # Number of samples shifted
-# 	mtWin = sample_shift*10.0
-# 	mtStep = 5.0*sample_shift
-# 	# mtWin, mtStep, stWin, stStep)
-# 	mtfeatures, stfeatures = featureExtraction.mtFeatureExtraction(signal, fs,mtWin , mtStep, window_len, sample_shift)
-# 	print len(mtfeatures)
-# 	print mtfeatures.shape
-# 	features = mtfeatures
-
-# 	# Transposing features to whiten them
-# 	features = np.reshape(features, (features.shape[1], features.shape[0]))
-# 	features = vq.whiten(features)
-# 	feature_codebook = vq.kmeans2(features,8, minit='points')[0]
-# 	# feature_codebook = feature_codebook.flatten()
-# 	x_test.append(feature_codebook)
-# 	y_test.append(fno)
-
-# x_test = np.array(x_test)
-# # print x_test.shape
-
 data_dim = 68 # Gaurav : Number of features 
 timesteps = 8 # Gaurav : Number of states 
 nb_classes = 5 # Gaurav : Number of users
@@ -291,20 +199,9 @@ model.add(LSTM(32, return_sequences=True))  # Gaurav : 32 neurons in the second 
 model.add(LSTM(32))  # Gaurav : 32 neurons in the third hidden layer
 model.add(Dense(5, activation='softmax')) # Gaurav : 10 neurons in output layer 
 
-model.compile(loss='categorical_crossentropy',
-              optimizer='rmsprop',
-              metrics=['accuracy'])
-
-# generate dummy training data
-# x_train = np.random.random((100, timesteps, data_dim)) # Gaurav : Sample x state vector x feature
-# y_train = np.random.random((100, nb_classes)) # Gaurav : Sample x user
-
-# generate dummy validation data
-# x_val = np.random.random((10, timesteps, data_dim)) # Gaurav : Sample x state vector x feature
-# y_val = np.random.random((10, nb_classes)) # Gaurav : Sample x user
+model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
 model.fit(x_train, y_train, nb_epoch=200, validation_split=0.1)
 
 # print model.predict(x_test)
 
-# # print score
