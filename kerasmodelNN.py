@@ -70,40 +70,43 @@ import scipy.cluster.vq as vq
 from sklearn.preprocessing import OneHotEncoder
 from keras.models import Sequential
 from keras.layers import LSTM, Dense
-from scipy.spatial import distance
+from scipy.spatial.distance import cdist
 
 frame_size = 25.0/1000.0 # to convert seconds to miliseconds
 frame_shift = 10.0/1000.0  # to convert seconds to miliseconds
 
-direc = "/home/manvi/Desktop/voicebiometric/Phoneme/trainset/"
+direc = "/home/gaurav/Documents/Phoneme/trainset/"
 
 num_speakers = 5
 srno = 0
 # speaker = numpy.zeros(shape=(num_speakers*4,34))
 
-
-def getDistance(codebook1, codebook2):
-	x = codebook1
-	y = codebook2
-	z = distance.cdist(x, y, 'euclidean')
-	return z
-
-
 x_train = []
 y_train = []
-distances = []
 
-cb = False
 fno = 0
+
+# Find argmin for a 2D matrix
+def findMin(matrix):
+	mini = matrix[0][0]
+	min_ind = [0,0]
+	for i in range(matrix.shape[0]):
+		for j in range(matrix.shape[1]):
+			if matrix[i][j]<mini:
+				mini = matrix[i][j]
+				min_ind = [i, j]
+	return min_ind
 
 while srno < num_speakers:
 	srno = srno+1
 	print srno
 	print
+	mapping = []
 	# fno =0 
 	directory = direc + str(srno) + "/"
 	# print directory
 	utterances = glob.glob(directory + "*.wav") #returns a list of names matching the argument in the directory
+	cb = False
 	# print utterances
 	for fname in utterances:
 		# print fname
@@ -128,8 +131,18 @@ while srno < num_speakers:
 		if cb==False:
 			codebook1 = feature_codebook
 			cb = True
-		z = getDistance(codebook1, feature_codebook)
-		distances.append(z)
+			x_train.append(feature_codebook)
+		    y_train.append(srno)
+			continue
+		z = cdist(codebook1, feature_codebook)
+		for i in range(8):
+			x, y = findMin(z)
+			mapping.append((x,y))
+			z[x, :] = 65000
+			z[:, y] = 65000
+		mapping.sort()
+		ind = map(lambda x: x[1], mapping)
+		feature_codebook = feature_codebook[ind][:]
 		# print z
 		# print vq.vq(features, feature_codebook)
 		# feature_codebook = feature_codebook.flatten()
@@ -137,105 +150,84 @@ while srno < num_speakers:
 		y_train.append(srno)
 
 
+# 	distanceCopy = distances[:]
 
-def findMin(matrix):
-	mini = matrix[0][0]
-	min_ind = [0,0]
-	for i in range(matrix.shape[0]):
-		for j in range(matrix.shape[1]):
-			if matrix[i][j]<mini:
-				mini = matrix[i][j]
-				min_ind = [i, j]
-	return min_ind
+# mapping = []
+# map_ij = []
+# idx = 1
 
-	
+# for i in range(8):
+# 	map_ij.append([i,i])
 
-distanceCopy = distances[:]
-
-mapping = []
-map_ij = []
-idx = 1
-
-for i in range(8):
-	map_ij.append([i,i])
-
-# map_ij.append([0,0])
-# map_ij.append([1,1])
-# map_ij.append([2,2])
-# map_ij.append([3,3])
-# map_ij.append([4,4])
-# map_ij.append([5,5])
-# map_ij.append([6,6])
-# map_ij.append([7,7])
-
-mapping.append(map_ij)
+# mapping.append(map_ij)
 
 
-print len(distances)
+# print len(distances)
 
-while idx<len(distances):
-	z = distances[idx]
-	idx2 = 0
-	map_ij = []
-	while idx2 < 8:
-		i,j = findMin(z)
-		map_ij.append([i,j])
-		m = 0
-		while m < 8:
-			z[i][m] = 65000
-			m+=1
-		m = 0
-		while m<8:
-			z[m][j] = 65000
-			m+=1
-		idx2 += 1
-	mapping.append(map_ij)
-	# print map_ij
-	idx += 1
+# while idx<len(distances):
+# 	z = distances[idx]
+# 	idx2 = 0
+# 	map_ij = []
+# 	while idx2 < 8:
+# 		i,j = findMin(z)
+# 		map_ij.append([i,j])
+# 		m = 0
+# 		while m < 8:
+# 			z[i][m] = 65000
+# 			m+=1
+# 		m = 0
+# 		while m<8:
+# 			z[m][j] = 65000
+# 			m+=1
+# 		idx2 += 1
+# 	mapping.append(map_ij)
+# 	# print map_ij
+# 	idx += 1
 
-print len(mapping)
+# print len(mapping)
 
-for i in mapping:
-	print i
+# for i in mapping:
+# 	print i
 
-indices  = numpy.random.permutation(10)
-print type(indices)
-
-
-i = 0
-indices = []
-shuffledDists = []
-shuffledIndi = []
-
-while i<len(distanceCopy):
-	z = distanceCopy[i]
-	indices = []
-	map_ij = mapping[i]
-	for j in map_ij:
-		# print j[1]
-		indices.append(j[1])
-	print indices
-	i += 1
-	z = z[indices, :]
-	shuffledIndi.append(indices)
-	shuffledDists.append(z)
+# indices  = numpy.random.permutation(10)
+# print type(indices)
 
 
-print len(x_train)
-print len(y_train)
-print len(shuffledDists)
+# i = 0
+# indices = []
+# shuffledDists = []
+# shuffledIndi = []
 
-x_traincopy = x_train[:]
-x_train = []
-i = 0
+# while i<len(distanceCopy):
+# 	z = distanceCopy[i]
+# 	indices = []
+# 	map_ij = mapping[i]
+# 	for j in map_ij:
+# 		# print j[1]
+# 		indices.append(j[1])
+# 	print indices
+# 	i += 1
+# 	z = z[indices, :] # Good one
+# 	print z
+# 	shuffledIndi.append(indices)
+# 	shuffledDists.append(z)
 
-while i<len(x_traincopy):
-	x = x_traincopy[i]
-	indices = shuffledIndi[i]
-	print indices
-	x = x[indices,:]
-	x_train.append(x)
-	i += 1
+
+# print len(x_train)
+# print len(y_train)
+# print len(shuffledDists)
+
+# x_traincopy = x_train[:]
+# x_train = []
+# i = 0
+
+# while i<len(x_traincopy):
+# 	x = x_traincopy[i]
+# 	indices = shuffledIndi[i]
+# 	print indices
+# 	x = x[indices,:]
+# 	x_train.append(x)
+# 	i += 1
 
 
 
