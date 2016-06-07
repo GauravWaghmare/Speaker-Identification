@@ -58,9 +58,6 @@ from sklearn.preprocessing import OneHotEncoder
 # print
 # print score
 
-
-
-
 import numpy as np
 import numpy
 import featureExtraction
@@ -132,7 +129,7 @@ while srno < num_speakers:
 			codebook1 = feature_codebook
 			cb = True
 			x_train.append(feature_codebook)
-		    y_train.append(srno)
+			y_train.append(srno)
 			continue
 		z = cdist(codebook1, feature_codebook)
 		for i in range(8):
@@ -141,14 +138,14 @@ while srno < num_speakers:
 			z[x, :] = 65000
 			z[:, y] = 65000
 		mapping.sort()
-		ind = map(lambda x: x[1], mapping)
+		ind = np.array(map(lambda x: x[1], mapping))
 		feature_codebook = feature_codebook[ind][:]
+		print feature_codebook
 		# print z
 		# print vq.vq(features, feature_codebook)
 		# feature_codebook = feature_codebook.flatten()
 		x_train.append(feature_codebook)
 		y_train.append(srno)
-
 
 # 	distanceCopy = distances[:]
 
@@ -282,31 +279,31 @@ while srno < num_speakers:
 # x_test = np.array(x_test)
 # # print x_test.shape
 
-# data_dim = 68 # Gaurav : Number of features 
-# timesteps = 8 # Gaurav : Number of states 
-# nb_classes = 5 # Gaurav : Number of users
+data_dim = 68 # Gaurav : Number of features 
+timesteps = 8 # Gaurav : Number of states 
+nb_classes = 5 # Gaurav : Number of users
 
-# # expected input data shape: (batch_size, timesteps, data_dim)
-# model = Sequential()
-# model.add(LSTM(32, return_sequences=True, # Gaurav : 32 neurons in the first hidden layer
-#                input_shape=(timesteps, data_dim)))  # returns a sequence of vectors of dimension 32
-# model.add(LSTM(32, return_sequences=True))  # Gaurav : 32 neurons in the second hidden layer
-# model.add(LSTM(32))  # Gaurav : 32 neurons in the third hidden layer
-# model.add(Dense(5, activation='softmax')) # Gaurav : 10 neurons in output layer 
+# expected input data shape: (batch_size, timesteps, data_dim)
+model = Sequential()
+model.add(LSTM(32, return_sequences=True, # Gaurav : 32 neurons in the first hidden layer
+               input_shape=(timesteps, data_dim)))  # returns a sequence of vectors of dimension 32
+model.add(LSTM(32, return_sequences=True))  # Gaurav : 32 neurons in the second hidden layer
+model.add(LSTM(32))  # Gaurav : 32 neurons in the third hidden layer
+model.add(Dense(5, activation='softmax')) # Gaurav : 10 neurons in output layer 
 
-# model.compile(loss='categorical_crossentropy',
-#               optimizer='rmsprop',
-#               metrics=['accuracy'])
+model.compile(loss='categorical_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
 
-# # generate dummy training data
-# # x_train = np.random.random((100, timesteps, data_dim)) # Gaurav : Sample x state vector x feature
-# # y_train = np.random.random((100, nb_classes)) # Gaurav : Sample x user
+# generate dummy training data
+# x_train = np.random.random((100, timesteps, data_dim)) # Gaurav : Sample x state vector x feature
+# y_train = np.random.random((100, nb_classes)) # Gaurav : Sample x user
 
-# # generate dummy validation data
-# # x_val = np.random.random((10, timesteps, data_dim)) # Gaurav : Sample x state vector x feature
-# # y_val = np.random.random((10, nb_classes)) # Gaurav : Sample x user
+# generate dummy validation data
+# x_val = np.random.random((10, timesteps, data_dim)) # Gaurav : Sample x state vector x feature
+# y_val = np.random.random((10, nb_classes)) # Gaurav : Sample x user
 
-# model.fit(x_train, y_train, nb_epoch=200, validation_split=0.1)
+model.fit(x_train, y_train, nb_epoch=200, validation_split=0.1)
 
 # print model.predict(x_test)
 
