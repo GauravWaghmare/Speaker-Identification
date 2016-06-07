@@ -2,6 +2,8 @@
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation
 from keras.optimizers import SGD
+# import feature_loader
+import math
 from sklearn.preprocessing import OneHotEncoder
 
 # direc = "/home/manvi/Desktop/voicebiometric/Phoneme/trainset/"
@@ -70,7 +72,6 @@ from keras.models import Sequential
 from keras.layers import LSTM, Dense
 from scipy.spatial import distance
 
-z = []
 frame_size = 25.0/1000.0 # to convert seconds to miliseconds
 frame_shift = 10.0/1000.0  # to convert seconds to miliseconds
 
@@ -93,15 +94,22 @@ y_train = []
 distances = []
 
 cb = False
+fno = 0
 
 while srno < num_speakers:
 	srno = srno+1
+	print srno
+	print
+	# fno =0 
 	directory = direc + str(srno) + "/"
 	# print directory
 	utterances = glob.glob(directory + "*.wav") #returns a list of names matching the argument in the directory
 	# print utterances
 	for fname in utterances:
 		# print fname
+		fno += 1
+		print fno
+		print
 		fs, signal = scipy.io.wavfile.read(fname)
 		window_len = frame_size*fs # Number of samples in frame_size
 		sample_shift = frame_shift*fs # Number of samples shifted
@@ -109,8 +117,8 @@ while srno < num_speakers:
 		mtStep = 5.0*sample_shift
 		# mtWin, mtStep, stWin, stStep)
 		mtfeatures, stfeatures = featureExtraction.mtFeatureExtraction(signal, fs,mtWin , mtStep, window_len, sample_shift)
-		print len(mtfeatures)
-		print mtfeatures.shape
+		# print len(mtfeatures)
+		# print mtfeatures.shape
 		features = mtfeatures
 		# features = featureExtraction.stFeatureExtraction(signal, fs, window_len, sample_shift)
 		# Transposing features to whiten them
@@ -122,15 +130,119 @@ while srno < num_speakers:
 			cb = True
 		z = getDistance(codebook1, feature_codebook)
 		distances.append(z)
-		print z
+		# print z
 		# print vq.vq(features, feature_codebook)
 		# feature_codebook = feature_codebook.flatten()
 		x_train.append(feature_codebook)
 		y_train.append(srno)
 
-for i in distances:
-	print distances
-	print
+
+
+def findMin(matrix):
+	mini = matrix[0][0]
+	min_ind = [0,0]
+	for i in range(matrix.shape[0]):
+		for j in range(matrix.shape[1]):
+			if matrix[i][j]<mini:
+				mini = matrix[i][j]
+				min_ind = [i, j]
+	return min_ind
+
+	
+
+distanceCopy = distances[:]
+
+mapping = []
+map_ij = []
+idx = 1
+
+for i in range(8):
+	map_ij.append([i,i])
+
+# map_ij.append([0,0])
+# map_ij.append([1,1])
+# map_ij.append([2,2])
+# map_ij.append([3,3])
+# map_ij.append([4,4])
+# map_ij.append([5,5])
+# map_ij.append([6,6])
+# map_ij.append([7,7])
+
+mapping.append(map_ij)
+
+
+print len(distances)
+
+while idx<len(distances):
+	z = distances[idx]
+	idx2 = 0
+	map_ij = []
+	while idx2 < 8:
+		i,j = findMin(z)
+		map_ij.append([i,j])
+		m = 0
+		while m < 8:
+			z[i][m] = 65000
+			m+=1
+		m = 0
+		while m<8:
+			z[m][j] = 65000
+			m+=1
+		idx2 += 1
+	mapping.append(map_ij)
+	# print map_ij
+	idx += 1
+
+print len(mapping)
+
+for i in mapping:
+	print i
+
+indices  = numpy.random.permutation(10)
+print type(indices)
+
+
+i = 0
+indices = []
+shuffledDists = []
+shuffledIndi = []
+
+while i<len(distanceCopy):
+	z = distanceCopy[i]
+	indices = []
+	map_ij = mapping[i]
+	for j in map_ij:
+		# print j[1]
+		indices.append(j[1])
+	print indices
+	i += 1
+	z = z[indices, :]
+	shuffledIndi.append(indices)
+	shuffledDists.append(z)
+
+
+print len(x_train)
+print len(y_train)
+print len(shuffledDists)
+
+x_traincopy = x_train[:]
+x_train = []
+i = 0
+
+while i<len(x_traincopy):
+	x = x_traincopy[i]
+	indices = shuffledIndi[i]
+	print indices
+	x = x[indices,:]
+	x_train.append(x)
+	i += 1
+
+
+
+# 	X = X[indices, :]
+
+
+
 # x_train = np.array(x_train)
 # # print x_train.shape
 # # y_train = np.array([0]*4+[1]*4+[2]*4+[3]*4+[4]*4)
@@ -206,6 +318,4 @@ for i in distances:
 
 # print model.predict(x_test)
 
-
-# print score
-
+# # print score
