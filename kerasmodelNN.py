@@ -239,9 +239,9 @@ y_train = np.array(y_train)
 # print y_train.shape
 # print
 # print
-# y_train = np.reshape(y_train, (y_train.shape[0],1 ))
-# enc = OneHotEncoder()
-# y_train = enc.fit_transform(y_train).toarray()
+y_train = np.reshape(y_train, (y_train.shape[0],1 ))
+enc = OneHotEncoder()
+y_train = enc.fit_transform(y_train).toarray()
 # # print y_train
 # # print y_train.shape
 
