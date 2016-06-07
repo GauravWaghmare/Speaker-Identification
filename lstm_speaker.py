@@ -35,63 +35,64 @@ while srno < num_speakers:
 		features = np.reshape(features, (features.shape[1], features.shape[0]))
 		features = vq.whiten(features)
 		feature_codebook = vq.kmeans2(features,5)[0]
+		print feature_codebook
+		print
 		# print vq.vq(features, feature_codebook)
 		x_train.append(feature_codebook)
+	print
 
-x_train = np.array(x_train)
-# print x_train.shape
-y_train = np.array([0]*4+[1]*4+[2]*4+[3]*4+[4]*4)
-y_train = np.reshape(y_train, (20,1))
-enc = OneHotEncoder()
-y_train = enc.fit_transform(y_train).toarray()
-# print y_train
-# print y_train.shape
+# x_train = np.array(x_train)
+# # print x_train.shape
+# y_train = np.array([0]*4+[1]*4+[2]*4+[3]*4+[4]*4)
+# y_train = np.reshape(y_train, (20,1))
+# enc = OneHotEncoder()
+# y_train = enc.fit_transform(y_train).toarray()
+# # print y_train
+# # print y_train.shape
 
-x_test = []
+# x_test = []
 
-directory = direc + "test/"
-utterances = glob.glob(directory + "*.wav")
-# print utterances
-utterances.sort()
-# print utterances
-for fname in utterances:
-	fs, signal = scipy.io.wavfile.read(fname)
-	window_len = frame_size*fs # Number of samples in frame_size
-	sample_shift = frame_shift*fs # Number of samples shifted
-	features = featureExtraction.stFeatureExtraction(signal, fs, window_len, sample_shift)
-	# Transposing features to whiten them
-	features = np.reshape(features, (features.shape[1], features.shape[0]))
-	features = vq.whiten(features)
-	feature_codebook = vq.kmeans2(features,5)[0]
-	x_test.append(feature_codebook)
+# directory = direc + "test/"
+# utterances = glob.glob(directory + "*.wav")
+# # print utterances
+# utterances.sort()
+# # print utterances
+# for fname in utterances:
+# 	fs, signal = scipy.io.wavfile.read(fname)
+# 	window_len = frame_size*fs # Number of samples in frame_size
+# 	sample_shift = frame_shift*fs # Number of samples shifted
+# 	features = featureExtraction.stFeatureExtraction(signal, fs, window_len, sample_shift)
+# 	# Transposing features to whiten them
+# 	features = np.reshape(features, (features.shape[1], features.shape[0]))
+# 	features = vq.whiten(features)
+# 	feature_codebook = vq.kmeans2(features,5)[0]
+# 	x_test.append(feature_codebook)
 
-x_test = np.array(x_test)
-# print x_test.shape
+# x_test = np.array(x_test)
+# # print x_test.shape
 
-data_dim = 34 # Gaurav : Number of features 
-timesteps = 5 # Gaurav : Number of states 
-nb_classes = 5 # Gaurav : Number of users
+# data_dim = 34 # Gaurav : Number of features 
+# timesteps = 5 # Gaurav : Number of states 
+# nb_classes = 5 # Gaurav : Number of users
 
-# expected input data shape: (batch_size, timesteps, data_dim)
-model = Sequential()
-model.add(LSTM(32, return_sequences=True, # Gaurav : 32 neurons in the first hidden layer
-               input_shape=(timesteps, data_dim)))  # returns a sequence of vectors of dimension 32
-model.add(LSTM(32, return_sequences=True))  # Gaurav : 32 neurons in the second hidden layer
-model.add(LSTM(32))  # Gaurav : 32 neurons in the third hidden layer
-model.add(Dense(5, activation='softmax')) # Gaurav : 10 neurons in output layer 
+# # expected input data shape: (batch_size, timesteps, data_dim)
+# model = Sequential()
+# model.add(LSTM(32, return_sequences=True, # Gaurav : 32 neurons in the first hidden layer
+#                input_shape=(timesteps, data_dim)))  # returns a sequence of vectors of dimension 32
+# model.add(LSTM(32, return_sequences=True))  # Gaurav : 32 neurons in the second hidden layer
+# model.add(LSTM(32))  # Gaurav : 32 neurons in the third hidden layer
+# model.add(Dense(5, activation='softmax')) # Gaurav : 10 neurons in output layer 
 
-model.compile(loss='categorical_crossentropy',
-              optimizer='rmsprop',
-              metrics=['accuracy'])
+# model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
-# generate dummy training data
-# x_train = np.random.random((100, timesteps, data_dim)) # Gaurav : Sample x state vector x feature
-# y_train = np.random.random((100, nb_classes)) # Gaurav : Sample x user
+# # generate dummy training data
+# # x_train = np.random.random((100, timesteps, data_dim)) # Gaurav : Sample x state vector x feature
+# # y_train = np.random.random((100, nb_classes)) # Gaurav : Sample x user
 
-# generate dummy validation data
-# x_val = np.random.random((10, timesteps, data_dim)) # Gaurav : Sample x state vector x feature
-# y_val = np.random.random((10, nb_classes)) # Gaurav : Sample x user
+# # generate dummy validation data
+# # x_val = np.random.random((10, timesteps, data_dim)) # Gaurav : Sample x state vector x feature
+# # y_val = np.random.random((10, nb_classes)) # Gaurav : Sample x user
 
-model.fit(x_train, y_train, nb_epoch=200, validation_split=0.1)
+# model.fit(x_train, y_train, nb_epoch=200, validation_split=0.1)
 
-print model.predict(x_test)
+# # print model.predict(x_test)
