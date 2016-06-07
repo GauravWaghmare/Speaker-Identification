@@ -232,10 +232,10 @@ while srno < num_speakers:
 
 
 
-# x_train = np.array(x_train)
+x_train = np.array(x_train)
 # # print x_train.shape
-# # y_train = np.array([0]*4+[1]*4+[2]*4+[3]*4+[4]*4)
-# y_train = np.array(y_train)
+y_train = np.array([0]*4+[1]*4+[2]*4+[3]*4+[4]*4)
+y_train = np.array(y_train)
 # print y_train.shape
 # print
 # print
