@@ -1,81 +1,94 @@
-import wave
+#!/usr/bin/python2
+# -*- coding: utf-8 -*-
+# $File: ltsd.py
+# $Date: Sun Jul 19 17:53:59 2015 +0800
+# $Author: Xinyu Zhou <zxytim[at]gmail[dot]com>
+
+import sys
+from scipy.io import wavfile
+import matplotlib
+matplotlib.use("Qt4Agg")
+import matplotlib.pyplot as plt
 import numpy as np
-import scipy as sp
 
-sound='/home/gaurav/Documents/Phoneme/trainset/2/3.wav'
+from pyssp.vad.ltsd import LTSD
 
-WINLEN=25.0/1000.0
 
-def read_signal(filename, winsize):
-    wf=wave.open(filename,'rb')
-    n=wf.getnframes()
-    str=wf.readframes(n)
-    params = ((wf.getnchannels(), wf.getsampwidth(),
-               wf.getframerate(), wf.getnframes(),
-               wf.getcomptype(), wf.getcompname()))
-    winsize= params[3]*WINLEN
-    siglen=((int )(len(str)/2/winsize) + 1) * winsize
-    signal=sp.zeros(siglen, sp.int16)
-    signal[0:len(str)/2] = sp.fromstring(str,sp.int16)
-    return [signal, params, winsize]
+MAGIC_NUMBER = 0.04644
 
-def get_frame(signal, winsize, no):
-    shift=winsize/2.5
-    start=no*shift
-    end = start+winsize
-    return signal[start:end]
+class LTSD_VAD(object):
+    ltsd = None
+    order = 5
 
-class LTSD():
-    def __init__(self,winsize,window,order):
-        self.winsize = winsize
-        self.window = window
-        self.order = order
-        self.amplitude = {}
+    fs = 0
+    window_size = 0
+    window = 0
 
-    def get_amplitude(self,signal,l):
-        if self.amplitude.has_key(l):
-            return self.amplitude[l]
-        else:
-            amp = sp.absolute(sp.fft(get_frame(signal, self.winsize,l) * self.window))
-            self.amplitude[l] = amp
-            return amp
+    lambda0 = 0
+    lambda1 = 0
 
-    def compute_noise_avg_spectrum(self,nsignal):
-        windownum = len(nsignal)/(self.winsize/2) - 1
-        avgamp = np.zeros(self.winsize)
-        for l in xrange(windownum):
-            avgamp += sp.absolute(sp.fft(get_frame(nsignal, self.winsize,l) * self.window))
-        return avgamp/float(windownum)
-    
-    def compute(self,signal):
-        self.windownum = len(ssignal)/(self.winsize/2) - 1
-        ltsds = np.zeros(self.windownum)
-        #Calculate the average noise spectrum amplitude based　on 20 frames in the head parts of input signal.
-        self.avgnoise = self.compute_noise_avg_spectrum(signal[0:self.winsize*20])**2
-        for l in xrange(self.windownum):
-            ltsds[l] = self.ltsd(signal,l,5)
-        return ltsds
+    noise_signal = None
 
-    def ltse(self,signal,l,order):
-        maxmag = np.zeros(self.winsize)
-        for idx in range(l-order,l+order+1):
-            amp = self.get_amplitude(signal,idx)
-            maxamp = np.maximum(maxamp,amp)
-        return maxamp
+    def init_params_by_noise(self, fs, noise_signal):
+        noise_signal = self._mononize_signal(noise_signal)
+        self.noise_signal = np.array(noise_signal)
+        self._init_window(fs)
+        ltsd = LTSD(self.window_size, self.window, self.order)
+        res, ltsds = ltsd.compute_with_noise(noise_signal,
+                noise_signal)
+        max_ltsd = max(ltsds)
+        self.lambda0 = max_ltsd * 1.1
+        self.lambda1 = self.lambda0 * 2.0
+        print 'max_ltsd =', max_ltsd
+        print 'lambda0 =', self.lambda0
+        print 'lambda1 =', self.lambda1
 
-    def ltsd(self,signal,l,order):
-        if l < order or l+order >= self.windownum:
-            return 0
-        return 10.0*np.log10(np.sum(self.ltse(signal,l,order)**2/self.avgnoise)/float(len(self.avgnoise)))
- 
+    def plot_ltsd(self, fs, signal):
+        signal = self._mononize_signal(signal)
+        res, ltsds = self._get_ltsd().compute_with_noise(signal, self.noise_signal)
+        plt.plot(ltsds)
+        plt.show()
 
-if __name__=="__main__":
-    signal, params, WINSIZE = read_signal(sound,WINLEN)
-    window = sp.hanning(WINSIZE)
-    ltsd = LTSD(WINSIZE,window,5)
-    res =  ltsd.compute(signal)
-    import matplotlib.pyplot as plt
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.plot(res)
-    plt.show()
+    def filter(self, signal):
+        signal = self._mononize_signal(signal)
+        res, ltsds = self._get_ltsd().compute_with_noise(signal, self.noise_signal)
+        voice_signals = []
+        res = [(start * self.window_size / 2, (finish + 1) * self.window_size
+                / 2) for start, finish in res]
+        print res, len(ltsds) * self.window_size / 2
+        for start, finish in res:
+            voice_signals.append(signal[start:finish])
+        try:
+            return np.concatenate(voice_signals), res
+        except:
+            return np.array([]), []
+
+    def _init_window(self, fs):
+        self.fs = fs
+        self.window_size = int(MAGIC_NUMBER * fs)
+        self.window = np.hanning(self.window_size)
+
+    def _get_ltsd(self, fs=None):
+        if fs is not None and fs != self.fs:
+            self._init_window(fs)
+        return LTSD(self.window_size, self.window, self.order,
+                lambda0=self.lambda0, lambda1=self.lambda1)
+
+    def _mononize_signal(self, signal):
+        if signal.ndim > 1:
+            signal = signal[:,0]
+        return signal
+
+
+def main():
+    fs, bg_signal = wavfile.read(sys.argv[1])
+    ltsd = LTSD_VAD()
+    ltsd.init_params_by_noise(fs, bg_signal)
+
+    fs, signal = wavfile.read(sys.argv[2])
+    vaded_signal = ltsd.filter(signal)
+
+    wavfile.write('/home/gaurav/Documents/Phoneme/trainset/2/3_1.wav', fs, vaded_signal)
+
+if __name__ == '__main__':
+    main()
