@@ -9,9 +9,7 @@ from sklearn import svm
 import features.sigproc as sigproc
 
 [fs, data] = wavfile.read("/home/gaurav/Documents/Phoneme/trainset/2/3.wav")
-
-data = np.mean(data, axis=1)
-# print(data)
+print(data)
 
 i = 0
 while data[i]==0:
