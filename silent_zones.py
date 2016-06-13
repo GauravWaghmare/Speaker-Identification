@@ -8,7 +8,7 @@ from features import mfcc
 from sklearn import svm
 import features.sigproc as sigproc
 
-[fs, data] = wavfile.read("/home/gaurav/Documents/Phoneme/trainset/2/3.wav")
+[fs, data] = wavfile.read("/home/gaurav/Documents/Phoneme/trainset/3/4.wav")
 print(data)
 
 i = 0
@@ -95,7 +95,7 @@ time_axis = np.array(range(len(data)))/fs
 # energy1.set_title("Energy")
 # plt.show()
 
-mfcc_feat = mfcc(data, samplerate=fs)
+mfcc_feat = mfcc(data, samplerate=fs, appendEnergy=False)
 # print("mfcc shape", mfcc_feat.shape)
 feature_vector = []
 for i in range(tenp*2):
