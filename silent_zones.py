@@ -8,7 +8,7 @@ from features import mfcc
 from sklearn import svm
 import features.sigproc as sigproc
 
-[fs, data] = wavfile.read("/home/gaurav/Downloads/Gaurav_Manvi_recs/1.wav")
+[fs, data] = wavfile.read("/home/gaurav/Documents/Phoneme/trainset/2/3.wav")
 
 data = np.mean(data, axis=1)
 # print(data)
