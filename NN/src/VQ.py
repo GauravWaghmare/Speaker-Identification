@@ -8,6 +8,7 @@ import scipy.stats as stats
 from features import mfcc
 from sklearn import cluster
 import Removesilence as rs
+from feature import mix_feature
 
 
 frame_size = 35.0/1000.0 # to convert seconds to miliseconds
@@ -47,9 +48,10 @@ def getFeatureMatrix(direc, num_speakers):
 			segmentLimits = numpy.asarray(segmentLimits)
 			data = rs.nonsilentRegions(segmentLimits, fs, signal)
 
-			features, stfeatures = featureExtraction.mtFeatureExtraction(data, fs, sample_shift*10.0, 2.0*sample_shift, window_len, sample_shift )
+			features = mix_feature((fs, data))
+			# features, stfeatures = featureExtraction.mtFeatureExtraction(data, fs, sample_shift*10.0, 2.0*sample_shift, window_len, sample_shift )
 
-			featuresT = features.transpose()
+			# featuresT = features.transpose()
 			print featuresT.shape
 			print
 			if flag==False:
@@ -75,6 +77,7 @@ def getFeaturesFromWave(fname, frame_size = 0.035, frame_shift = 0.010):
 	segmentLimits = numpy.asarray(segmentLimits)
 	data = rs.nonsilentRegions(segmentLimits, fs, signal)
 
-	features, stfeatures = featureExtraction.mtFeatureExtraction(data, fs, sample_shift*10.0, 5.0*sample_shift, window_len, sample_shift )
+	features = mix_feature((fs, data))
+	# features, stfeatures = featureExtraction.mtFeatureExtraction(data, fs, sample_shift*10.0, 5.0*sample_shift, window_len, sample_shift )
 	featuresT = features.transpose()
 	return featuresT
