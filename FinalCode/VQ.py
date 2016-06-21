@@ -8,7 +8,7 @@ import scipy.stats as stats
 from features import mfcc
 from sklearn import cluster
 import Removesilence as rs
-from feature import mix_feature
+# from feature import mix_feature
 from keras.regularizers import l2, activity_l2
 import LPC
 

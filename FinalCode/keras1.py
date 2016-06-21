@@ -5,7 +5,7 @@ from keras.layers import Dense, Dropout, Activation
 from keras.optimizers import SGD
 import math
 import VQ
-import applyLDA as al
+# import applyLDA as al
 import mlpy
 from sklearn.lda import LDA
 from sklearn import preprocessing
