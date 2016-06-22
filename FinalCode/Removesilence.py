@@ -18,7 +18,8 @@ import featureExtraction as fe
 import scipy
 import scipy.io.wavfile as wavfile
 import sklearn
-from features import mfcc
+# from features import mfcc
+import MFCC
 from sklearn import svm
 
 def listOfFeatures2Matrix(features):
@@ -226,13 +227,13 @@ def nonsilentRegions(segmentLimits, fs, data):
 	for i in segmentLimits:
 		start = i[0]
 		end = i[1]
+		# print ("start =",start,"and end =",end)
 		a = data[start:end]
 		if flag==False:
 			wave = a
 			flag = True
 		else:
 			wave = numpy.concatenate((wave, a ))
-
 	# wavfile.write(file, fs, wave)
 	return wave
 
