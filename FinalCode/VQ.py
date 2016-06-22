@@ -1,14 +1,15 @@
-from sklearn.lda import LDA
 import featureExtraction
 import glob
 import numpy
 import scipy.io.wavfile
 from sklearn.preprocessing import OneHotEncoder
-import scipy.stats as stats
-from features import mfcc
-from sklearn import cluster
 from keras.regularizers import l2, activity_l2
 import LPC
+# import mfcc
+# from features import LPC
+import utils
+from features import mfcc
+# from features import utils
 import Removesilence as rs
 
 
@@ -25,7 +26,7 @@ class Features(object):
 		srno = 0
 		flag = False
 		fno =0
-		while srno < self.num_speakers:
+		while (srno < self.num_speakers):
 			srno = srno+1
 			print "\nsrno = " + str(srno)
 			directory = self.direc + str(srno) + "/"
@@ -76,7 +77,7 @@ class Features(object):
 
 	def load_data(self):
 		X, Y = self.getTrainingMatrix()
-		indices  = np.random.permutation(Y.shape[0])
+		indices  = numpy.random.permutation(Y.shape[0])
 		X = X[indices, :]
 		Y = Y[indices]
 		train_data_rows = int(Y.shape[0])
