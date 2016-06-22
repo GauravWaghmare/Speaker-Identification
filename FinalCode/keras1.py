@@ -35,7 +35,8 @@ class Train(object):
 		pca = PCA(n_components='mle', whiten = True) 
 		pca.fit(X_train)
 		X_train = pca.transform(X_train)
-		return (X_train, pca)
+		self.pca = pca
+		return X_train
 
 
 	def encodeY(self, y_train):
@@ -51,7 +52,7 @@ class Train(object):
 		y_train = train_data[1]
 		print X_train.shape
 
-		X_train, pca = self.Pca(X_train)
+		X_train = self.Pca(X_train)
 		y_train = self.encodeY(y_train)
 
 		print X_train.shape
@@ -60,6 +61,11 @@ class Train(object):
 		self.model.add(Dense(64, input_dim=X_train.shape[1] , init=activation_fn))
 		self.model.add(Activation('tanh'))
 		self.model.add(Dropout(0.5))
+
+		self.model.add(Dense(10, input_dim=int(X_train.shape[1]/100) , init=activation_fn))
+		self.model.add(Activation('tanh'))
+		self.model.add(Dropout(0.5))
+
 		self.model.add(Dense(self.num_speakers, init=activation_fn))
 		self.model.add(Activation('softmax'))
 
@@ -68,13 +74,11 @@ class Train(object):
 		              optimizer=sgd,
 		              metrics=['accuracy'])
 
-		self.model.fit(X_train, y_train, nb_epoch=epochs, validation_split= 0.2)
-
-		return pca
+		self.model.fit(X_train, y_train, nb_epoch=epochs, validation_split= 0.2, batch_size=32)
 
 
 	def test(self, testdirec):
-		pca = self.train()
+		# pca = self.train()
 		files = glob.glob(testdirec + "*.wav")
 		tot_positives = 0
 		speaker_no = 0
@@ -88,7 +92,7 @@ class Train(object):
 			test_data = self.featuresObj.getFeaturesFromWave(testFile)  ### frames by features(34)
 
 			X_test = test_data
-			X_test = pca.transform(X_test)
+			X_test = self.pca.transform(X_test)
 			modelNN = self.model.predict(X_test)
 			# print modelNN
 
@@ -152,7 +156,7 @@ testdirec = "/home/manvi/Desktop/voicebiometric/Phoneme/Test/"
 
 t = Train(num_speakers=14, directory = direc, frame_size=0.032, frame_shift=0.016)
 
-pca = t.train()
+t.train()
 tot_positives = t.test(testdirec)
 print tot_positives
 # num_speakers = 10
