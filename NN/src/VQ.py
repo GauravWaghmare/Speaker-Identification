@@ -5,7 +5,7 @@ import numpy
 import scipy.io.wavfile
 from sklearn.preprocessing import OneHotEncoder
 import scipy.stats as stats
-from features import mfcc
+# from features import mfcc
 from sklearn import cluster
 import Removesilence as rs
 from feature import mix_feature
