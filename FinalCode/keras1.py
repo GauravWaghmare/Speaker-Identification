@@ -158,7 +158,7 @@ t = Train(num_speakers=14, directory = direc, frame_size=0.032, frame_shift=0.01
 
 t.train()
 tot_positives = t.test(testdirec)
-print tot_positives
+print tot_positives	
 # num_speakers = 10
 
 # featuresObj = Features(0.032, 0.016, direc, num_speakers)
