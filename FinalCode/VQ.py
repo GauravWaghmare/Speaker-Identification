@@ -5,51 +5,59 @@ import scipy.io.wavfile
 from sklearn.preprocessing import OneHotEncoder
 from keras.regularizers import l2, activity_l2
 import LPC
-# import mfcc
-# from features import LPC
 import utils
-from features import mfcc
-# from features import utils
 import Removesilence as rs
+import os
 
 
 class Features(object):
 	"""docstring for Features"""
-	
-	def __init__(self, frame_size, frame_shift, direc, num_speakers):
+	num_speakers = 0
+	mapping = {}
+	def __init__(self, frame_size, frame_shift):
 		self.frame_size = float(frame_size)
 		self.frame_shift = float(frame_shift)
-		self.direc = direc
-		self.num_speakers = int(num_speakers)
+		# self.direc = direc
+		# num_speakers = int(num_speakers)
 	
-	def getTrainingMatrix(self):
+	def getTrainingMatrix(self, direc):
 		srno = 0
 		flag = False
 		fno =0
-		while (srno < self.num_speakers):
-			srno = srno+1
-			print "\nsrno = " + str(srno)
-			directory = self.direc + str(srno) + "/"
-			utterances = glob.glob(directory + "*.wav")
+		for user_directory in os.listdir(direc):
+			print
+			print "username = " + str(user_directory)
+			phone_number = user_directory.split("-")
+			phone_number = phone_number[0]
+			phone_number = int(phone_number)
+			print phone_number
+			print
+			user_directory_path = os.path.join(direc, user_directory)
 
-			for fname in utterances:
-				fn = fname.split('/')
-				fn = fn[-1]
-				fno = fno + 1
-				print
-				print fn
-				print fname
-				featuresT = self.getFeaturesFromWave(fname)
-
-				if flag==False:
-					c = featuresT
-					flag = True
-					y = numpy.ones(shape=(featuresT.shape[0],))
-				else:
-					c = numpy.concatenate((c, featuresT), axis = 0)
-					y1 = numpy.ones(shape=(featuresT.shape[0],))
-					y1.fill(srno)
-					y = numpy.concatenate((y,y1), axis = 0)
+			if os.path.isdir(user_directory_path):
+				Features.num_speakers += 1
+				Features.mapping[Features.num_speakers] = phone_number
+				srno += 1
+				for file in os.listdir(user_directory_path):
+					print "\nfile_name = " + str(file)
+					fname = os.path.join(user_directory_path, file)
+					if os.path.isfile(fname):
+						fn = fname.split('/')
+						fn = fn[-1]
+						if fn[-4:]=='.wav':
+							featuresT = self.getFeaturesFromWave(fname)
+							if flag==False:
+								c = featuresT
+								flag = True
+								y = numpy.ones(shape=(featuresT.shape[0],))
+								y.fill(Features.num_speakers)
+							else:
+								c = numpy.concatenate((c, featuresT), axis = 0)
+								y1 = numpy.ones(shape=(featuresT.shape[0],))
+								y1.fill(Features.num_speakers)
+								y = numpy.concatenate((y,y1), axis = 0)
+						else:
+							print "file is not an audio file"
 
 		return (c, y)
 
@@ -69,14 +77,14 @@ class Features(object):
 		data = rs.nonsilentRegions(segmentLimits, fs, signal)
 
 		stfeatures = featureExtraction.stFeatureExtraction(data, fs, window_len, sample_shift )
-		lpc = LPC.extract((fs, data))
+		lpc = LPC.extract((fs, data), win_len = 32, win_shift = 16)
 		featuresT = stfeatures.transpose()
 		featuresT = numpy.concatenate((featuresT, lpc), axis = 1)
 		return featuresT
 
 
-	def load_data(self):
-		X, Y = self.getTrainingMatrix()
+	def load_data(self, directory):
+		X, Y = self.getTrainingMatrix(directory)
 		indices  = numpy.random.permutation(Y.shape[0])
 		X = X[indices, :]
 		Y = Y[indices]
@@ -86,4 +94,3 @@ class Features(object):
 		train_y = Y[0:train_data_rows+1]
 		train_data = (train_x, train_y)
 		return train_data
-
