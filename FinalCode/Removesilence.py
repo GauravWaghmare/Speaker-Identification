@@ -11,7 +11,7 @@ from sklearn.lda import LDA
 import csv
 import os.path
 import sklearn
-import sklearn.hmm
+# import sklearn.hmm
 import cPickle
 import glob
 import featureExtraction as fe
@@ -225,8 +225,8 @@ def nonsilentRegions(segmentLimits, fs, data):
 	flag = False
 
 	for i in segmentLimits:
-		start = i[0]
-		end = i[1]
+		start = int(i[0])
+		end = int(i[1])
 		# print ("start =",start,"and end =",end)
 		a = data[start:end]
 		if flag==False:
