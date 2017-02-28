@@ -11,14 +11,15 @@ from sklearn.lda import LDA
 import csv
 import os.path
 import sklearn
-import sklearn.hmm
+# import sklearn.hmm
 import cPickle
 import glob
 import featureExtraction as fe
 import scipy
 import scipy.io.wavfile as wavfile
 import sklearn
-from features import mfcc
+# from features import mfcc
+import MFCC
 from sklearn import svm
 
 def listOfFeatures2Matrix(features):
@@ -218,35 +219,21 @@ def silenceRemoval(x, Fs, stWin, stStep, smoothWindow=0.5, Weight=0.5, plot=Fals
 
 
 
-def plot_wave(t, y, xlabel, ylabel):
-	plt.plot(t,y)
-	plt.xlabel(xlabel)
-	plt.ylabel(ylabel)
-
-
-def get_original_wave(speech, sampling_freq):
-	y = speech
-	ts = 1.0/sampling_freq
-	tot_duration = (1.0/sampling_freq)*len(y)
-	t = numpy.arange(1.0/sampling_freq,(tot_duration+ts),1.0/sampling_freq)
-	return (t,y)
-
-
-def nonsilentRegions(segmentLimits, fs):
+def nonsilentRegions(segmentLimits, fs, data):
 	segmentLimits *= fs
 	wave = numpy.array([])
 	flag = False
 
 	for i in segmentLimits:
-		start = i[0]
-		end = i[1]
+		start = int(i[0])
+		end = int(i[1])
+		# print ("start =",start,"and end =",end)
 		a = data[start:end]
 		if flag==False:
 			wave = a
 			flag = True
 		else:
 			wave = numpy.concatenate((wave, a ))
-
 	# wavfile.write(file, fs, wave)
 	return wave
 
@@ -259,8 +246,3 @@ def nonsilentRegions(segmentLimits, fs):
 # segmentLimits = silenceRemoval(data, fs, stWin, stStep)
 # segmentLimits = numpy.asarray(segmentLimits)
 # wave = nonsilentRegions(segmentLimits, fs)
-
-
-# t,y = get_original_wave(data, fs)
-# plot_wave(t,y, "time in seconds", "energy")
-# plt.show()

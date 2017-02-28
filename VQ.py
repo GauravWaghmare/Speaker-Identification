@@ -1,94 +1,96 @@
-from sklearn.lda import LDA
 import featureExtraction
 import glob
 import numpy
 import scipy.io.wavfile
-import scipy.cluster.vq as vq
 from sklearn.preprocessing import OneHotEncoder
-from seqlearn.hmm import MultinomialHMM
-import scipy.stats as stats
-from features import mfcc
-from sklearn import cluster
+from keras.regularizers import l2, activity_l2
+import LPC
+import utils
+import Removesilence as rs
+import os
 
 
-frame_size = 25.0/1000.0 # to convert seconds to miliseconds
-frame_shift = 10.0/1000.0  # to convert seconds to miliseconds
+class Features(object):
+	"""docstring for Features"""
+	num_speakers = 0
+	mapping = {}
+	def __init__(self, frame_size, frame_shift):
+		self.frame_size = float(frame_size)
+		self.frame_shift = float(frame_shift)
+		# self.direc = direc
+		# num_speakers = int(num_speakers)
+	
+	def getTrainingMatrix(self, direc):
+		srno = 0
+		flag = False
+		fno =0
+		for user_directory in os.listdir(direc):
+			print
+			print "username = " + str(user_directory)
+			phone_number = user_directory.split("-")
+			phone_number = phone_number[0]
+			phone_number = int(phone_number)
+			print phone_number
+			print
+			user_directory_path = os.path.join(direc, user_directory)
+
+			if os.path.isdir(user_directory_path):
+				Features.num_speakers += 1
+				Features.mapping[Features.num_speakers] = phone_number
+				srno += 1
+				for file in os.listdir(user_directory_path):
+					print "\nfile_name = " + str(file)
+					fname = os.path.join(user_directory_path, file)
+					if os.path.isfile(fname):
+						fn = fname.split('/')
+						fn = fn[-1]
+						if fn[-4:]=='.wav':
+							featuresT = self.getFeaturesFromWave(fname)
+							if flag==False:
+								c = featuresT
+								flag = True
+								y = numpy.ones(shape=(featuresT.shape[0],))
+								y.fill(Features.num_speakers)
+							else:
+								c = numpy.concatenate((c, featuresT), axis = 0)
+								y1 = numpy.ones(shape=(featuresT.shape[0],))
+								y1.fill(Features.num_speakers)
+								y = numpy.concatenate((y,y1), axis = 0)
+						else:
+							print "file is not an audio file"
+
+		return (c, y)
 
 
-direc = "/home/Gaurav/Documents/Phoneme/trainset/"
-num_speakers = 5
-srno = 0
-speaker = numpy.zeros(shape=(num_speakers*4,34))
-
-y = []
-d3_y = []
-fno =0
-row = 0
-speakers = []
-
-### -----------------------------------------
-#	direc folder contains num_speakers=5 number of folders
-# 	Every Folder has 5 files(almost) corresponding to same user
-# 	
-### -----------------------------------------
-
-
-while srno < num_speakers:
-	srno = srno+1
-	print "\nsrno = " + str(srno)
-	directory = direc + str(srno) + "/"
-	utterances = glob.glob(directory + "*.wav") #returns a list of names matching the argument in the directory
-	# feature_vector = numpy.zeros(shape=(34,1))
-	flag = False
-	# flag_2 = False
-
-	for fname in utterances:
-		fn = fname.split('/')
-		fn = fn[-1] #take just the name of the wav file
-		fno = fno + 1
-		row = row+1
-		y.append(srno-1)
+	def getFeaturesFromWave(self, fname):
 		fs, signal = scipy.io.wavfile.read(fname)
-		window_len = frame_size*fs # Number of samples in frame_size
-		sample_shift = frame_shift*fs # Number of samples shifted
-		features = featureExtraction.stFeatureExtraction(signal, fs, window_len, sample_shift)		# 34*number_frames
-		# print "features.shape = " + str(features.shape)
-		i = 0
-		if flag == False:
-			flag = True
-			feature_vector = features
-			print "feature vector " + feature_vector.shape
-			# print
-			# i = 1
-		else:
-			# print "arbitajvhfibvvdbli"
-			feature_vector = numpy.concatenate((feature_vector, features ), axis = 1)		# concatenate features matrix to prev matrix 
-																							# cols are added
-																							# number of rows remain same 
-			print "final feature vector " + feature_vector.shape #Is feature_vector featurexframe or framexfeature? 
-	d3_y.append(feature_vector)			# one element of this list corresponds to one user
-	# print "feature_vector = " + str(feature_vector.shape)
-	# print "speakers = " + str(speakers.shape)
-	# print
-	# speakers = numpy.append(speakers, feature_vector)
+		window_len = self.frame_size*fs 			# Number of samples in frame_size
+		sample_shift = self.frame_shift*fs 		# Number of samples shifted
+		try:
+			if signal.shape[1]:
+				signal = numpy.mean(signal, axis=1)
+		except:
+			print "single column"
+
+		segmentLimits = rs.silenceRemoval(signal, fs, self.frame_size, self.frame_shift)
+		segmentLimits = numpy.asarray(segmentLimits)
+		data = rs.nonsilentRegions(segmentLimits, fs, signal)
+
+		stfeatures = featureExtraction.stFeatureExtraction(data, fs, window_len, sample_shift )
+		lpc = LPC.extract((fs, data), win_len = 32, win_shift = 16)
+		featuresT = stfeatures.transpose()
+		featuresT = numpy.concatenate((featuresT, lpc), axis = 1)
+		return featuresT
 
 
-d3_y = numpy.array(d3_y)
-print d3_y.shape
-# print y
+	def load_data(self, directory):
+		X, Y = self.getTrainingMatrix(directory)
+		indices  = numpy.random.permutation(Y.shape[0])
+		X = X[indices, :]
+		Y = Y[indices]
+		train_data_rows = int(Y.shape[0])
 
-# Whitening every speaker's data before VQing
-# for i in range(d3_y.shape[0]):
-# 	d3_y[i,:,:] = vq.whiten(d3_y[i,:,:])
-
-# Calulating codebooks for every user
-# codebook = []
-# for i in range(d3_y.shape[0]):
-	# kmeans2 function takes in the argument as MxN, M is the no. of observations and N is the number of features
-	# I guess we'll have to take transpose or something of the d3_y matrix
-	# codebook.append(vq.kmeans2(d3_y[i,:,:],8)[0])
-
-# codebook = np.array(codebook) 
-
-# HMM_clf = MultinomialHMM() #Initialising HMM classifier
-# HMM_clf.fit(codebook)
+		train_x = X[0:train_data_rows+1, :]
+		train_y = Y[0:train_data_rows+1]
+		train_data = (train_x, train_y)
+		return train_data

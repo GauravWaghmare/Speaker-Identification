@@ -51,6 +51,7 @@ def stEnergyEntropy(frame, numOfShortBlocks=10):
     if L != subWinLength * numOfShortBlocks:
             frame = frame[0:subWinLength * numOfShortBlocks]
     # subWindows is of size [numOfShortBlocks x L]
+    
     subWindows = frame.reshape(subWinLength, numOfShortBlocks, order='F').copy()
 
     # Compute normalized sub-frame energies:
@@ -280,17 +281,6 @@ def stChromaFeatures(X, fs, nChroma, nFreqsPerChroma):
     #    finalC[i] = numpy.sum(C[i:C.shape[0]:12])
     finalC = numpy.matrix(numpy.sum(C2, axis=0)).T
     finalC /= spec.sum()
-
-#    ax = plt.gca()
-#    plt.hold(False)
-#    plt.plot(finalC)
-#    ax.set_xticks(range(len(chromaNames)))
-#    ax.set_xticklabels(chromaNames)
-#    xaxis = numpy.arange(0, 0.02, 0.01);
-#    ax.set_yticks(range(len(xaxis)))
-#    ax.set_yticklabels(xaxis)
-#    plt.show(block=False)
-#    plt.draw()
 
     return chromaNames, finalC
 
@@ -615,7 +605,6 @@ def mtFeatureExtraction(signal, Fs, mtWin, mtStep, stWin, stStep):
 
     mtWinRatio = int(round(mtWin / stStep))
     mtStepRatio = int(round(mtStep / stStep))
-    print "mtWinRatio = " + str(mtWinRatio) + " mtStepRatio =  " + str(mtStepRatio)
     mtFeatures = []
 
     stFeatures = stFeatureExtraction(signal, Fs, stWin, stStep)
@@ -623,7 +612,6 @@ def mtFeatureExtraction(signal, Fs, mtWin, mtStep, stWin, stStep):
     numOfStatistics = 2
 
     mtFeatures = []
-    #for i in range(numOfStatistics * numOfFeatures + 1):
     for i in range(numOfStatistics * numOfFeatures):
         mtFeatures.append([])
 
@@ -639,77 +627,6 @@ def mtFeatureExtraction(signal, Fs, mtWin, mtStep, stWin, stStep):
 
             mtFeatures[i].append(numpy.mean(curStFeatures))
             mtFeatures[i+numOfFeatures].append(numpy.std(curStFeatures))
-            #mtFeatures[i+2*numOfFeatures].append(numpy.std(curStFeatures) / (numpy.mean(curStFeatures)+0.00000010))
             curPos += mtStepRatio
 
     return numpy.array(mtFeatures), stFeatures
-
-
-
-# file_name = '/home/manvi/Desktop/voicebiometric/10recordings/4.wav'
-
-# fs, signal = scipy.io.wavfile.read(file_name)
-# # print fs
-
-# frame_size = 25.0/1000.0 # to convert seconds to miliseconds
-# frame_shift = 10.0/1000.0  # to convert seconds to miliseconds
-# window_len = frame_size*fs # Number of samples in frame_size
-# sample_shift = frame_shift*fs # Number of samples shifted
-
-# mtFeatures, stFeatures = mtFeatureExtraction(signal, fs, sample_shift*10.0, 5.0*sample_shift, window_len, sample_shift)
-
-# features = stFeatureExtraction(signal, fs, window_len, sample_shift )
-# print len(features)
-# # print features
-# for i in features:
-#     print i
-
-# print mtFeatures.shape
-# print len(mtFeatures[0])
-
-
-# print stFeatures.shape
-# print len(stFeatures[0])
-# meanSTF = numpy.mean(stFeatures, axis = 1)
-# print meanSTF.shape
-
-# stdSTF = numpy.std(stFeatures, axis = 1)
-
-# print stdSTF.shape
-
-
-
-# for  i  in mtFeatures:
-#     print i
-
-# ts = 1.0/fs
-# tot_duration = (1.0/fs)*len(signal)
-# t = arange(1, len(signal), sample_shift)
-# print t
-# print len(t)
-# t = t[:-2]
-# print len(t)
-# print features.shape
-
-# print len(features[0])
-# figure(1)
-# # plt.subplot(211)
-# plot_wave(t, features[0], "samples", "ZCR")
-
-# figure(2)
-# # plt.subplot(212)
-# print len(features[1])
-# plot_wave(t, features[1], "samples", "energy")
-# print
-
-# figure(3)
-# # plt.subplot(213)
-# print len(features[2])
-# plot_wave(t, features[2], "samples", "spectral energy")
-
-# print
-# figure(4)
-# # plt.subplot(3)
-# print len(features[3])
-# plot_wave( t, features[3], "samples", "spectral centroid")
-# show()
