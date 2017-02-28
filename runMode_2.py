@@ -26,7 +26,6 @@ class Train(object):
 	mapping = {}
 
 	def __init__(self,frame_size, frame_shift):
-		print "Training"
 		# self.num_speakers = num_speakers
 		Train.frame_size = frame_size
 		Train.frame_shift = frame_shift
@@ -53,14 +52,14 @@ class Train(object):
 		train_data = self.featuresObj.load_data(directory)
 		X_train = train_data[0]
 		y_train = train_data[1]
-		print X_train.shape
+		# print X_train.shape
 
 		X_train = self.Pca(X_train)
 		y_train = self.encodeY(y_train)
-		print y_train
-		print X_train.shape
-		print y_train.shape
-		print 
+		# print y_train
+		# print X_train.shape
+		# print y_train.shape
+		# print 
 		self.model.add(Dense(64, input_dim=X_train.shape[1] , init=activation_fn))
 		self.model.add(Activation('tanh'))
 		self.model.add(Dropout(0.5))
@@ -97,7 +96,7 @@ class Train(object):
 
 		print "total number of correct answers = " + str(tot_positives)
 		print 
-		print
+		# print
 		return tot_positives
 
 
@@ -159,8 +158,8 @@ if __name__ == "__main__":
 
 	if num_args < 3:
 		print """Enter task to be performed :
-				python keras1.py train /path to train directory  for training
-				python keras1.py test phone_number /path to test file for test
+				python runMode_2.py train /path to train directory  for training
+				python runMode_2.py test phone_number /path to test file for test
 				Enter directory name as well as test file name with it
 				"""
 		sys.exit(0)

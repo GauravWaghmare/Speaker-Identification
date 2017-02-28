@@ -1,4 +1,3 @@
-# from __future__ import print_function
 import featureExtraction
 import glob
 import numpy
@@ -13,9 +12,6 @@ from keras.optimizers import SGD
 from sklearn import preprocessing
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import OneHotEncoder
-# from features import mfcc
-
-# print("Successfully imported features")
 
 class Features(object):
 	"""docstring for Features"""
@@ -32,7 +28,7 @@ class Features(object):
 		fno =0
 		while (srno < self.num_speakers):
 			srno = srno+1
-			print "\nsrno = " + str(srno)
+			print "\nSpeaker No. = " + str(srno)
 			directory = self.direc + str(srno) + "/"
 			utterances = glob.glob(directory + "*.wav")
 
@@ -40,9 +36,6 @@ class Features(object):
 				fn = fname.split('/')
 				fn = fn[-1]
 				fno = fno + 1
-				print
-				print fn
-				print fname
 				featuresT = self.getFeaturesFromWave(fname)
 
 				if flag==False:
@@ -100,7 +93,6 @@ class Train(object):
 	frame_shift = 0.016
 
 	def __init__(self, num_speakers, directory, frame_size, frame_shift):
-		print "Training"
 		self.num_speakers = num_speakers
 		self.directory = direc
 		Train.frame_size = frame_size
@@ -124,7 +116,6 @@ class Train(object):
 
 
 	def train(self, epochs = 60, activation_fn = 'glorot_normal'):
-		print "Train function called."
 		train_data = self.featuresObj.load_data()
 		X_train = train_data[0]
 		y_train = train_data[1]
@@ -147,23 +138,12 @@ class Train(object):
 		              optimizer=sgd,
 		              metrics=['accuracy'])
 
-		# print "/n"
-		# print "Training starts"
-		# print "/n"
-
 		self.model.fit(X_train, y_train, nb_epoch=epochs, validation_split= 0.2)
-
-		# print "/n"
-		# print "Training ends"
-		# print "/n"
-
-		print "Train function exits"
 
 		return pca
 
 
 	def test(self, testdirec):
-		print "Test function called."
 		pca = self.train()
 		files = glob.glob(testdirec + "*.wav")
 		tot_positives = 0
@@ -205,11 +185,10 @@ class Train(object):
 					sumRows[j] = sumRows[j] + i[j]
 					j+=1
 
-			print sumRows
+			# print sumRows
 			sumRows = numpy.array(sumRows)
 			sumRows /= modelNN.shape[0]
-			print sumRows
-			print
+			# print sumRows
 
 			index = numpy.argmax(sumRows)
 			if index==speaker_no-1:
@@ -217,25 +196,18 @@ class Train(object):
 				print "true"
 			else:
 				print "false"
-			print 
-			print
 
 		print "total number of correct answers = " + str(tot_positives)
-		print 
-		print
-		print "Test function exits"
+		
 		return tot_positives
 
 
 
 
-direc = "/home/gaurav/Downloads/new_trainset/"
+direc = "/home/gaurav/Downloads/new_trainset/" 
 testdirec = "/home/gaurav/Downloads/new_trainset/Test/"
-# print
-# print "Training starts"
+
 t = Train(num_speakers=10, directory = direc, frame_size=0.032, frame_shift=0.016)
-# print "Training ends"
-# print
-# pca = t.train()
+
 tot_positives = t.test(testdirec)
 print tot_positives
